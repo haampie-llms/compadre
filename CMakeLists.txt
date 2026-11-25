@@ -381,6 +381,23 @@ else() # Raw CMake Project
   endif()
   set(KOKKOS_THREADS_ARG "--kokkos-num-threads")
 
+  # With Kokkos_ENABLE_COMPILE_AS_CMAKE_LANGUAGE, sources that include Kokkos are
+  # compiled with the language Kokkos was built for (CUDA or HIP).
+  if (Kokkos_COMPILE_LANGUAGE AND NOT Kokkos_COMPILE_LANGUAGE STREQUAL "CXX")
+    set(CMAKE_${Kokkos_COMPILE_LANGUAGE}_ARCHITECTURES ${Kokkos_${Kokkos_COMPILE_LANGUAGE}_ARCHITECTURES})
+    enable_language(${Kokkos_COMPILE_LANGUAGE})
+    set(CMAKE_${Kokkos_COMPILE_LANGUAGE}_STANDARD ${CMAKE_CXX_STANDARD})
+    set(CMAKE_${Kokkos_COMPILE_LANGUAGE}_EXTENSIONS OFF)
+  endif()
+  function(compadre_set_kokkos_language target)
+    if (Kokkos_COMPILE_LANGUAGE AND NOT Kokkos_COMPILE_LANGUAGE STREQUAL "CXX")
+      get_target_property(sources ${target} SOURCES)
+      set_source_files_properties(${sources} PROPERTIES LANGUAGE ${Kokkos_COMPILE_LANGUAGE})
+      # nanobind_add_module sets LINKER_LANGUAGE to CXX
+      set_target_properties(${target} PROPERTIES LINKER_LANGUAGE ${Kokkos_COMPILE_LANGUAGE})
+    endif()
+  endfunction()
+
   MESSAGE(STATUS "Compadre_USE_CUDA: ${Compadre_USE_CUDA}")
   if(Compadre_USE_CUDA)
     find_package(CUDAToolkit REQUIRED)
@@ -639,6 +656,7 @@ else() # Raw CMake Project
       pycompadre/pycompadre.cpp
     )
     target_link_libraries(_pycompadre PRIVATE compadre)
+    compadre_set_kokkos_language(_pycompadre)
     if (PYTHON_CALLING_BUILD)
       configure_file("${CMAKE_CURRENT_SOURCE_DIR}/pycompadre/__init__.py" "${CMAKE_CURRENT_BINARY_DIR}/__init__.py" COPYONLY)
     else()

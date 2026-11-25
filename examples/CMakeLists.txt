@@ -11,6 +11,7 @@ include_tribits_build()
 function(add_exe_w_compadre EXE_NAME CPP_NAME)
   add_executable(${EXE_NAME} ${CPP_NAME})
   target_link_libraries(${EXE_NAME} PRIVATE compadre)
+  compadre_set_kokkos_language(${EXE_NAME})
   bob_export_target(${EXE_NAME})
 endfunction(add_exe_w_compadre)
 
