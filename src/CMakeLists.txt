@@ -27,6 +27,7 @@ compadre_append_glob(COMPADRE_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/tpl/*.hpp)
 compadre_append_glob(COMPADRE_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 
 add_library(compadre ${COMPADRE_SOURCES})
+compadre_set_kokkos_language(compadre)
 bob_library_includes(compadre)
 
 # allows us to use flat directory includes when building, since that will be the file structure once installed
